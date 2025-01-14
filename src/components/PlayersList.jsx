@@ -221,7 +221,7 @@ const PlayersList = () => {
     // Initialize team amounts from localStorage or default to 10,000,000
     const storedAmounts = JSON.parse(localStorage.getItem("teamAmounts")) || {};
     return teams.reduce((acc, team) => {
-      acc[team] = storedAmounts[team] || 1200000000;
+      acc[team] = storedAmounts[team] || 120;
       return acc;
     }, {});
   });
@@ -258,7 +258,7 @@ const PlayersList = () => {
     localStorage.setItem("teams", JSON.stringify(storedTeams));
 
     alert(
-      `${playerForModal} sold to ${selectedTeam} for ₹${soldPrice.toLocaleString()}`
+      `${playerForModal} sold to ${selectedTeam} for ₹${soldPrice.toLocaleString()}Cr`
     );
     closeModal();
   };
@@ -454,7 +454,7 @@ const PlayersList = () => {
                           className="mr-2"
                         />
                         {team} - Remaining Amount: ₹
-                        {teamAmounts[team]?.toLocaleString() || "10,000,000"}
+                        {teamAmounts[team]?.toLocaleString() || "1"} Cr
                       </label>
                     </div>
                   ))}
@@ -464,7 +464,8 @@ const PlayersList = () => {
                   <input
                     type="number"
                     min="0"
-                    max={teamAmounts[selectedTeam] || 10000000}
+                    max={teamAmounts[selectedTeam] || 1}
+                    step="0.01" 
                     value={soldPrice}
                     onChange={(e) => setSoldPrice(Number(e.target.value))}
                     className="w-full p-2 border rounded"
