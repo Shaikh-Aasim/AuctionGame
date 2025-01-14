@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import RandomPlayerPicker from "./RandomPlayerPicker";
 
@@ -517,8 +517,7 @@ const PlayersList = () => {
     setSelectedPlayer(randomPlayer); // Set only the name as the selected player
     setSearchTerm(randomPlayer); // Set the name for filtering
   };
-  
-  
+
   const getCheckedCounts = () => {
     const totalCheckboxes = Object.keys(checkedPlayers).length;
     const checkedCount = Object.values(checkedPlayers).filter(Boolean).length;
@@ -528,6 +527,13 @@ const PlayersList = () => {
   };
 
   const { checkedCount, uncheckedCount } = getCheckedCounts();
+
+  // const formRef = useRef(null);
+
+  const handleUncheckAll = () => {
+    setCheckedPlayers({});
+    localStorage.removeItem("checkedPlayers");
+  };
   return (
     <>
       <div className="bg-black p-3">
@@ -564,22 +570,22 @@ const PlayersList = () => {
           </div>
         )}
       </div>
-      <div className=" py-1 px-4 flex bg-gray-100 shadow rounded border border-gray-300">
+      <div className=" py-1 px-4 flex bg-black text-white shadow border-t border-gray-300">
         <p className="mr-2">Sold: {checkedCount}</p>
         <p>Players Left: {uncheckedCount}</p>
       </div>
-      <div className="min-h-screen bg-gray-100 py-4 px-4">
+      <div className="min-h-screen bg-black text-white py-4 px-4">
         <div className="mb-4">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="p-2 border border-gray-300 rounded"
+            className="p-2 border border-gray-300 bg-[#222] text-white rounded"
             placeholder="Search player..."
           />
           <Link
             to="/SquadPage"
-            className="bg-gray-300 p-2 border border-black rounded ml-4"
+            className="bg-[#222] p-2 border border-white rounded ml-4"
           >
             Squads
           </Link>
@@ -627,54 +633,55 @@ const PlayersList = () => {
             </div>
           ))}
         </div> */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-  {Object.entries(players).map(([category, playerList]) => (
-    <div
-      key={category}
-      className="bg-white shadow-md rounded-lg p-6 border border-gray-200"
-    >
-      <h2 className="text-xl font-ububtu text-gray-800 mb-4 border-b pb-2">
-        {category}
-      </h2>
-      <ul>
-        {playerList
-          .filter((player) =>
-            player.name.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-          .map((player, index) => (
-            <li
-              key={index}
-              className="flex justify-between items-center p-2 border-b last:border-b-0 transition duration-300 hover:bg-black hover:text-white"
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {Object.entries(players).map(([category, playerList]) => (
+            <div
+              key={category}
+              className="bg-[#222] shadow-md rounded-lg p-6 border border-gray-200"
             >
-              <span
-                className="text-base font-ububtu cursor-pointer"
-                onClick={() => openModal(player.name)}
-              >
-                {index + 1}. {player.name} - ₹{player.price}
-              </span>
-              <input
-                type="checkbox"
-                checked={
-                  checkedPlayers[`${category}-${player.name}`] || false
-                }
-                onChange={() => handleCheckboxChange(player.name, category)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
-              />
-            </li>
+              <h2 className="text-xl font-ububtu text-white mb-4 border-b pb-2">
+                {category}
+              </h2>
+              <ul>
+                {playerList
+                  .filter((player) =>
+                    player.name.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map((player, index) => (
+                    <li
+                      key={index}
+                      className="flex justify-between items-center p-2 border-b last:border-b-0 transition duration-300 hover:bg-black hover:text-white"
+                    >
+                      <span
+                        className="text-base font-ububtu cursor-pointer"
+                        onClick={() => openModal(player.name)}
+                      >
+                        {index + 1}. {player.name} - ₹{player.price}
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={
+                          checkedPlayers[`${category}-${player.name}`] || false
+                        }
+                        onChange={() =>
+                          handleCheckboxChange(player.name, category)
+                        }
+                        className="w-4 h-4 text-black bg-gray-100 border-gray-300 rounded"
+                      />
+                    </li>
+                  ))}
+              </ul>
+            </div>
           ))}
-      </ul>
-    </div>
-  ))}
-</div>
-
-
+        </div>
 
         {showModal && playerForModal && (
           <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 flex justify-center items-center z-10">
-            <div className="bg-white p-8 rounded-lg shadow-lg">
-              <h2 className="text-xl font-bold mb-4">
+            <div className="bg-black p-8 rounded-lg shadow-lg">
+              <h2 className="text-xl font-bold mb-4 border-b pb-1">
                 Player: {playerForModal}
               </h2>
+
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -694,8 +701,11 @@ const PlayersList = () => {
                           onChange={(e) => setSelectedTeam(e.target.value)}
                           className="mr-2"
                         />
-                        {team} - Remaining Amount: ₹
-                        {teamAmounts[team]?.toLocaleString() || "1"} Cr
+                        {team} -
+                        <span class="bg-gray-100 text-gray-800  font-medium ml-2 px-2.5 py-0.5 rounded-full dark:bg-gray-700 dark:text-gray-300">
+                          {" "}
+                          {teamAmounts[team]?.toLocaleString() || "1"} Cr
+                        </span>
                       </label>
                     </div>
                   ))}
@@ -706,24 +716,24 @@ const PlayersList = () => {
                     type="number"
                     min="0"
                     max={teamAmounts[selectedTeam] || 1}
-                    step="0.01" 
+                    step="0.01"
                     value={soldPrice}
                     onChange={(e) => setSoldPrice(Number(e.target.value))}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border rounded bg-[#222]"
                     required
                   />
                 </div>
                 <div className="flex justify-between">
                   <button
                     type="submit"
-                    className="bg-green-500 text-white px-4 py-2 rounded"
+                    className="bg-[#222] border border-white text-white px-4 py-2 rounded"
                   >
-                    Submit
+                    Sold
                   </button>
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="bg-red-500 text-white px-4 py-2 rounded"
+                    className="bg-red-700 text-white px-4 py-2 rounded"
                   >
                     Close
                   </button>
@@ -735,11 +745,43 @@ const PlayersList = () => {
 
         {/* Button to Clear Teams */}
         <div className="mt-4 text-center">
-          <button
+          {/* <button
             onClick={clearTeams}
             className="bg-red-600 text-white p-2 rounded"
           >
             Clear Squads (Teams)
+          </button>
+          <button
+            className="bg-red-700 ml-2 text-white px-4 py-2 rounded"
+            onClick={handleUncheckAll}
+          >
+            Uncheck All
+          </button> */}
+          <button
+            onClick={() => {
+              if (
+                window.confirm("Are you sure you want to clear squads (teams)?")
+              ) {
+                clearTeams();
+              }
+            }}
+            className="bg-red-600 text-white p-2 rounded"
+          >
+            Clear Squads (Teams)
+          </button>
+          <button
+            onClick={() => {
+              if (
+                window.confirm(
+                  "Are you sure you want to uncheck all checkboxes?"
+                )
+              ) {
+                handleUncheckAll();
+              }
+            }}
+            className="bg-red-700 ml-2 text-white px-4 py-2 rounded"
+          >
+            Uncheck All
           </button>
         </div>
       </div>
