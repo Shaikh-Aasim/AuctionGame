@@ -4,6 +4,8 @@ import SquadPage from "./components/SquadPage";
 import PlayerList from "./components/PlayersList"
 import RandomPlayerPicker from "./components/RandomPlayerPicker";
 import ListPage from "./components/ListPage";
+import NewAuctionPage from "./components/NewAuctionPage";
+import NewSquad from "./components/NewSquad";
 
 
 function App() {
@@ -18,6 +20,8 @@ function App() {
             <Route exact path="/PlayGame" element={<RandomPlayerPicker />}></Route>
             <Route exact path="/SquadPage" element={<SquadPage />}></Route>
             <Route exact path="/ListPage" element={<ListPage />}></Route>
+            <Route exact path="/NewAuctionPage" element={<NewAuctionPage />}></Route>
+            <Route exact path="/NewSquad" element={<NewSquad/>}></Route>
             
           </Routes>
         </div>

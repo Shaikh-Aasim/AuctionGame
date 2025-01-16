@@ -16,6 +16,8 @@ const HomePage = () => {
       navigate("/PlayerList");
     } else if (inputCode === "9999") {
       navigate("/ListPage");
+    }  else if (inputCode === "1234") {
+      navigate("/NewAuctionPage");
     } else {
       alert("Invalid code! Please try again.");
     }
