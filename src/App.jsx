@@ -6,6 +6,9 @@ import RandomPlayerPicker from "./components/RandomPlayerPicker";
 import ListPage from "./components/ListPage";
 import NewAuctionPage from "./components/NewAuctionPage";
 import NewSquad from "./components/NewSquad";
+import NewListPage from "./MegaAuction/NewListPage";
+import TeamManage from "./MegaAuction/TeamManage";
+import MainAuction from "./MegaAuction/MainAuction";
 
 
 function App() {
@@ -22,6 +25,9 @@ function App() {
             <Route exact path="/ListPage" element={<ListPage />}></Route>
             <Route exact path="/NewAuctionPage" element={<NewAuctionPage />}></Route>
             <Route exact path="/NewSquad" element={<NewSquad/>}></Route>
+            <Route exact path="/NewListPage" element={<NewListPage/>}></Route>
+            <Route exact path="/TeamManage" element={<TeamManage/>}></Route>
+            <Route exact path="/MainAuction" element={<MainAuction/>}></Route>
             
           </Routes>
         </div>

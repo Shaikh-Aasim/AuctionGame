@@ -10,7 +10,8 @@ export default {
       signature: ['Great Vibes'],
       custom: ['Rubik Vinyl'], // Add your font
       ububtu: ['Ubuntu'],
-      Orbitron: ['Orbitron']
+      Orbitron: ['Orbitron'],
+      Anton: ['Anton']
     }
   },
   plugins: [],

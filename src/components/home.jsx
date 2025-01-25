@@ -12,13 +12,17 @@ const HomePage = () => {
   };
 
   const handleCodeSubmit = () => {
-    if (inputCode === "2620") {
-      navigate("/PlayerList");
-    } else if (inputCode === "9999") {
-      navigate("/ListPage");
-    }  else if (inputCode === "1234") {
+    // if (inputCode === "2620") {
+    //   navigate("/PlayerList");
+    // } else if (inputCode === "9999") {
+    //   navigate("/ListPage");
+    // }  else
+     if (inputCode === "1234") {
       navigate("/NewAuctionPage");
-    } else {
+    } else if (inputCode === "MegaAuctionList") {
+      navigate("/NewListPage");
+    } 
+    else {
       alert("Invalid code! Please try again.");
     }
     setShowPopup(false); // Close the popup
@@ -26,16 +30,17 @@ const HomePage = () => {
   return (
     <div className="min-h-screen w-full bg-[url('https://i.pinimg.com/originals/a6/f3/94/a6f3949e88dd6377ce3f25982838df4b.jpg')] bg-cover py-10 items-center justify-center text-white">
       <div className="text-center">
-        <h1 className="text-5xl font-ububtu mb-6">Auction Game</h1>
+        <h1 className="text-5xl font-ububtu mb-6">Mega Auction 2k25</h1>
        
-        <h1 className='font-Orbitron text-4xl font-bold mb-6 text-[#FFD700]'>185 Players</h1>
+        <h1 className='font-Orbitron text-4xl font-bold mb-6 text-[#FFD700]'>240 Players</h1>
+        <p>code :- MegaAuctionList</p>
         {/* <Link to='PlayerList' class="bg-[#FFD700] text-black font-bold py-3 px-6 border-b-4 my-6 border-black rounded">
             Start Playing
         </Link> */}
          <div>
       <button
         onClick={handleButtonClick}
-        className="bg-[#FFD700] text-black font-bold py-3 px-6 border-b-4 my-6 border-black rounded"
+        className="bg-[#FFD700] text-black font-bold py-3 px-6 border-b-4 mt-6 border-black rounded"
       >
         Start Playing
       </button>
