@@ -4,53 +4,91 @@ import bg_img from "../assets/bg_img.jpeg";
 import { Link, useNavigate } from "react-router-dom";
 
 // Helper function to handle localStorage
-const getStoredTeams = () => {
-  const teams = localStorage.getItem("teams");
-  return teams ? JSON.parse(teams) : [];
+const getStoredteamNames = () => {
+  const teamNames = localStorage.getItem("teamNames");
+  return teamNames ? JSON.parse(teamNames) : [];
 };
 
 function TeamManage() {
-  const [teams, setTeams] = useState(getStoredTeams());
+  const [teamNames, setteamNames] = useState(getStoredteamNames());
   const [newTeamName, setNewTeamName] = useState("");
   const [editingIndex, setEditingIndex] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Update localStorage when teams change
-    localStorage.setItem("teams", JSON.stringify(teams));
-  }, [teams]);
+  // useEffect(() => {
+  //   // Update localStorage when teamNames change
+  //   localStorage.setItem("teamNames", JSON.stringify(teamNames));
+  // }, [teamNames]);
 
+  // const addTeam = () => {
+  //   if (newTeamName && teamNames.length < 10) {
+  //     setteamNames([...teamNames, newTeamName]);
+  //     setNewTeamName("");
+  //   }
+  // };
+
+  // const editTeam = (index) => {
+  //   setEditingIndex(index);
+  //   setNewTeamName(teamNames[index]);
+  // };
+
+  // const updateTeam = () => {
+  //   if (newTeamName) {
+  //     const updatedteamNames = [...teamNames];
+  //     updatedteamNames[editingIndex] = newTeamName;
+  //     setteamNames(updatedteamNames);
+  //     setNewTeamName("");
+  //     setEditingIndex(null);
+  //   }
+  // };
+
+  // const deleteTeam = (index) => {
+  //   const isConfirmed = window.confirm(
+  //     "Are you sure you want to delete this team?"
+  //   );
+  //   if (isConfirmed) {
+  //     const updatedteamNames = teamNames.filter((_, idx) => idx !== index);
+  //     setteamNames(updatedteamNames);
+  //   }
+  // };
+
+  useEffect(() => {
+    // Update localStorage when team names change
+    localStorage.setItem("teamNames", JSON.stringify(teamNames));
+  }, [teamNames]);
+  
   const addTeam = () => {
-    if (newTeamName && teams.length < 10) {
-      setTeams([...teams, newTeamName]);
+    if (newTeamName && teamNames.length < 10) {
+      setteamNames([...teamNames, newTeamName]);
       setNewTeamName("");
     }
   };
-
+  
   const editTeam = (index) => {
     setEditingIndex(index);
-    setNewTeamName(teams[index]);
+    setNewTeamName(teamNames[index]);
   };
-
+  
   const updateTeam = () => {
     if (newTeamName) {
-      const updatedTeams = [...teams];
-      updatedTeams[editingIndex] = newTeamName;
-      setTeams(updatedTeams);
+      const updatedteamNames = [...teamNames];
+      updatedteamNames[editingIndex] = newTeamName;
+      setteamNames(updatedteamNames);
       setNewTeamName("");
       setEditingIndex(null);
     }
   };
-
+  
   const deleteTeam = (index) => {
     const isConfirmed = window.confirm(
       "Are you sure you want to delete this team?"
     );
     if (isConfirmed) {
-      const updatedTeams = teams.filter((_, idx) => idx !== index);
-      setTeams(updatedTeams);
+      const updatedteamNames = teamNames.filter((_, idx) => idx !== index);
+      setteamNames(updatedteamNames);
     }
   };
+  
 
   const startAuction = () => {
     // Logic to start the auction (can be expanded)
@@ -107,7 +145,7 @@ function TeamManage() {
 
           {/* Display team cards */}
           <div className="team-cards grid grid-cols-2 gap-4 mb-4">
-            {teams.map((team, index) => (
+            {teamNames.map((team, index) => (
               <div
                 className="team-card bg-gray-800 p-4 rounded text-white"
                 key={index}
@@ -136,7 +174,7 @@ function TeamManage() {
             <button
               onClick={startAuction}
               className="bg-purple-600 text-white p-2 rounded"
-              disabled={teams.length < 8 || teams.length > 10}
+              disabled={teamNames.length < 8 || teamNames.length > 10}
             >
               Start Auction
             </button>

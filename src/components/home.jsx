@@ -21,6 +21,8 @@ const HomePage = () => {
       navigate("/NewAuctionPage");
     } else if (inputCode === "MegaAuctionList") {
       navigate("/NewListPage");
+    } else if (inputCode === "aasim26112005shaikh") {
+      navigate("/TeamManage");
     } 
     else {
       alert("Invalid code! Please try again.");

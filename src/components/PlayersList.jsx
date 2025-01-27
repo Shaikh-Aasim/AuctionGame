@@ -488,28 +488,14 @@ const PlayersList = () => {
     setPlayerForModal(null);
   };
 
-  const selectTeam = (team) => {
-    let storedTeams = JSON.parse(localStorage.getItem("teams")) || {};
-    if (!storedTeams[team]) {
-      storedTeams[team] = [];
-    }
-    storedTeams[team].push(playerForModal);
-    localStorage.setItem("teams", JSON.stringify(storedTeams));
-    closeModal();
-  };
+ 
 
   const clearTeams = () => {
     localStorage.removeItem("teams");
     alert("Teams have been cleared from local storage.");
   };
 
-  // const pickRandomPlayer = (category) => {
-  //   const playerList = players[category];
-  //   const randomPlayer =
-  //     playerList[Math.floor(Math.random() * playerList.length)];
-  //   setSelectedPlayer(randomPlayer);
-  //   setSearchTerm(randomPlayer);
-  // };
+  
   const pickRandomPlayer = (category) => {
     const playerList = players[category];
     const randomPlayer =
@@ -594,45 +580,9 @@ const PlayersList = () => {
           </Link>
         </div>
         <h1 className="text-2xl font-bold text-center mb-4">Players List</h1>
-        {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {Object.entries(players).map(([category, playerList]) => (
-            <div
-              key={category}
-              className="bg-white shadow-md rounded-lg p-6 border border-gray-200"
-            >
-              <h2 className="text-xl font-ububtu text-gray-800 mb-4 border-b pb-2">
-                {category}
-              </h2>
-              <ul>
-                {playerList
-                  .filter((player) =>
-                    player.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
-                  .map((player, index) => (
-                    <li
-                      key={index}
-                      className="flex justify-between items-center p-2 border-b last:border-b-0 transition duration-300 hover:bg-black hover:text-white"
-                    >
-                      <span
-                        className="text-base font-ububtu cursor-pointer"
-                        onClick={() => openModal(player)}
-                      >
-                        {index + 1}. {player}
-                      </span>
-                      <input
-                        type="checkbox"
-                        checked={
-                          checkedPlayers[`${category}-${player}`] || false
-                        }
-                        onChange={() => handleCheckboxChange(player, category)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                      />
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          ))}
-        </div> */}
+        
+
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {Object.entries(players).map(([category, playerList]) => (
             <div

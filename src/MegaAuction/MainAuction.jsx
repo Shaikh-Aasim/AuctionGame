@@ -1,49 +1,242 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import bg_img from "../assets/auctiontop.jpg";
 import { Link } from "react-router-dom";
 import playerData from "/src/MegaAuction/Players";
 
-
 function MainAuction() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [storedUnsoldPlayers, setStoredUnsoldPlayers] = useState(null);
 
+
+  useEffect(() => {
+    
+      const players = JSON.parse(localStorage.getItem("unsold_players")) || [];
+      setStoredUnsoldPlayers(players);
+      console.log(storedUnsoldPlayers)
+    }, []);    
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
 
+  const [setIndex, setSetIndex] = useState(0); // For cycling between sets
+  const [playerIndex, setPlayerIndex] = useState(0); // For cycling within a set
+
+  // Navigate to the next player
+  const nextPlayer = () => {
+    setPlayerIndex(
+      (prevIndex) => (prevIndex + 1) % playerData[setIndex].players.length
+    );
+  };
+
+  // Navigate to the previous player
+  const prevPlayer = () => {
+    setPlayerIndex(
+      (prevIndex) =>
+        (prevIndex - 1 + playerData[setIndex].players.length) %
+        playerData[setIndex].players.length
+    );
+  };
+
+  // Navigate to the next set
+  const nextSet = () => {
+    setSetIndex((prevIndex) => (prevIndex + 1) % playerData.length);
+    setPlayerIndex(0); // Reset player index to 0 when moving to the next set
+  };
+
+  // Navigate to the previous set
+  const prevSet = () => {
+    setSetIndex(
+      (prevIndex) => (prevIndex - 1 + playerData.length) % playerData.length
+    );
+    setPlayerIndex(0); // Reset player index to 0 when moving to the previous set
+  };
+
+  const { setName, players } = playerData[setIndex];
+  const { name, basePrice, src, type } = players[playerIndex];
+
+  // Retrieve the teams from localStorage
+  let teams = JSON.parse(localStorage.getItem("teamNames"));
+
+  // Check if teams exist in localStorage, otherwise initialize an empty array
+  if (!teams) {
+    teams = [];
+  }
+
+  const [storeTeams, setStoredTeams] = useState({});
+  const [selectedTeam, setSelectedTeam] = useState("");
+  const [soldPrice, setSoldPrice] = useState("");
+
+  const [teamAmounts, setTeamAmounts] = useState(() => {
+    // Initialize team amounts from localStorage or default to 150 cr
+    const storedAmounts = JSON.parse(localStorage.getItem("teamAmounts")) || {};
+    return teams.reduce((acc, team) => {
+      acc[team] = storedAmounts[team] || 150;
+      return acc;
+    }, {});
+  });
+
+  const [showModal, setShowModal] = useState(false);
+  const [imgsrc, setImgSrc] = useState(null);
+  const [playerForModal, setPlayerForModal] = useState(null);
+  const [ptype, setType] = useState(null);
+  const openModal = (player, src, type) => {
+    setPlayerForModal(player);
+    setImgSrc(src);
+    setType(type);
+    setShowModal(true);
+  };
+  const closeModal = () => {
+    setShowModal(false);
+    setPlayerForModal(null);
+  };
+
+  const handlePlayerSale = () => {
+    if (!selectedTeam || !soldPrice) {
+      alert("Please select a team and enter a sold price.");
+      return;
+    }
 
 
-    const [setIndex, setSetIndex] = useState(0); // For cycling between sets
-    const [playerIndex, setPlayerIndex] = useState(0); // For cycling within a set
-  
-    // Navigate to the next player
-    const nextPlayer = () => {
-      setPlayerIndex((prevIndex) => (prevIndex + 1) % playerData[setIndex].players.length);
-    };
-  
-    // Navigate to the previous player
-    const prevPlayer = () => {
-      setPlayerIndex(
-        (prevIndex) => (prevIndex - 1 + playerData[setIndex].players.length) % playerData[setIndex].players.length
+    const newTeamAmounts = { ...teamAmounts };
+
+    // Check if the remaining amount is sufficient
+    if (newTeamAmounts[selectedTeam] < soldPrice) {
+      alert("Insufficient budget for this team!");
+      return;
+    }
+
+    // Deduct the sold price from the team's amount
+    newTeamAmounts[selectedTeam] -= soldPrice;
+
+    // Update `teamAmounts` in localStorage
+    setTeamAmounts(newTeamAmounts);
+    localStorage.setItem("teamAmounts", JSON.stringify(newTeamAmounts));
+
+    // Retrieve the `teams` object from localStorage
+    let storedTeams = JSON.parse(localStorage.getItem("teams")) || {};
+
+    // Debugging: Check the structure of `storedTeams`
+    console.log("Before Update:", storedTeams);
+
+    // Ensure the selected team exists as a key in `storedTeams`
+    if (!storedTeams[selectedTeam]) {
+      storedTeams[selectedTeam] = [];
+    }
+
+    if(storedUnsoldPlayers.name === playerForModal){
+      const updatedPlayers = storedUnsoldPlayers.filter(
+        (player) => player.name !== playerForModal
       );
-    };
-  
-    // Navigate to the next set
-    const nextSet = () => {
-      setSetIndex((prevIndex) => (prevIndex + 1) % playerData.length);
-      setPlayerIndex(0); // Reset player index to 0 when moving to the next set
-    };
-  
-    // Navigate to the previous set
-    const prevSet = () => {
-      setSetIndex(
-        (prevIndex) => (prevIndex - 1 + playerData.length) % playerData.length
+
+      // Update state and localStorage
+      setStoredUnsoldPlayers(updatedPlayers);
+      localStorage.setItem("unsold_players", JSON.stringify(updatedPlayers));
+    }
+
+    // Add the player and sold price to the team's array
+    storedTeams[selectedTeam].push({
+      player: playerForModal,
+      price: soldPrice,
+      src: imgsrc,
+      type: ptype,
+    });
+
+    // Save the updated `teams` object to localStorage
+    localStorage.setItem("teams", JSON.stringify(storedTeams));
+
+    // Debugging: Verify the updated structure of `storedTeams`
+    console.log("After Update:", storedTeams);
+
+    alert(
+      `${playerForModal} sold to ${selectedTeam} for ₹${soldPrice.toLocaleString()}Cr`
+    );
+    closeModal();
+  };
+
+  // Check if the player is already sold
+  //  console.log(storeTeams)
+  const isPlayerSold = () => {
+    let storedTeams = JSON.parse(localStorage.getItem("teams")) || {};
+
+    for (let team in storedTeams) {
+      if (storedTeams[team].some((player) => player.player === name)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const isPlayerUnSold = () => {
+    // Retrieve the list of unsold players from localStorage
+    const storedUnsoldPlayer =
+      JSON.parse(localStorage.getItem("unsold_players")) || [];
+
+    // Iterate through the array to check if the player exists
+    for (let player of storedUnsoldPlayer) {
+      if (player.name === name) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+
+
+  const handleBidClick = () => {
+    if (isPlayerSold()) {
+      alert("Player already sold!");
+    } else {
+      openModal(name, src, type);
+    }
+  };
+
+  // const [isUnsold, setIsUnsold] = useState(false);
+
+  const handleUnsold = () => {
+    if (window.confirm("Sure Unsold ?")) {
+      // setIsUnsold(true);
+
+      // Retrieve player details
+      const { name, basePrice, src, type } = players[playerIndex];
+
+      // Retrieve existing unsold players from localStorage
+      const unsoldPlayers =
+        JSON.parse(localStorage.getItem("unsold_players")) || [];
+
+      // Check if the player is already in the list
+      const isAlreadyUnsold = unsoldPlayers.some(
+        (player) => player.name === name
       );
-      setPlayerIndex(0); // Reset player index to 0 when moving to the previous set
-    };
-  
-    const { setName, players } = playerData[setIndex];
-    const { name, basePrice, src } = players[playerIndex];
+
+      if (!isAlreadyUnsold) {
+        // Add the current unsold player to the list if not already present
+        const updatedUnsoldPlayers = [
+          ...unsoldPlayers,
+          { name, basePrice, src, type },
+        ];
+
+        // Store the updated list in localStorage
+        localStorage.setItem(
+          "unsold_players",
+          JSON.stringify(updatedUnsoldPlayers)
+        );
+      } else {
+        alert(`${name} is already marked as unsold.`);
+      }
+    }
+  };
+
+  const clearTeams = () => {
+    localStorage.removeItem("teams");
+    localStorage.removeItem("unsold_players");
+    localStorage.removeItem("teamAmounts");
+    alert("Teams have been cleared from local storage.");
+  };
+
+  const clearteamAmounts = () => {
+    alert("Team Amount have been cleared from local storage.");
+  };
+
 
   return (
     <div
@@ -91,117 +284,267 @@ function MainAuction() {
                 Home
               </button>
             </Link>
-            <button
-              onClick={toggleMenu}
-              className="text-center text-lg text-black block w-full p-2 mb-4 bg-blue-500 rounded"
-            >
-              Squads
-            </button>
-            <button
-              onClick={toggleMenu}
-              className="text-center text-lg text-black block w-full p-2 mb-4 bg-blue-500 rounded"
-            >
-              Players
-            </button>
-            <button
+            <Link to="/SquadPage">
+              <button
+                onClick={toggleMenu}
+                className="text-center text-lg text-black block w-full p-2 mb-4 bg-blue-500 rounded"
+              >
+                Squads
+              </button>
+            </Link>
+            <Link to="/TeamManage">
+              <button
+                onClick={toggleMenu}
+                className="text-center text-lg text-black block w-full p-2 mb-4 bg-blue-500 rounded"
+              >
+                Team Manage
+              </button>
+            </Link>
+            <Link to="/NewListPage">
+              <button
+                onClick={toggleMenu}
+                className="text-center text-lg text-black block w-full p-2 mb-4 bg-blue-500 rounded"
+              >
+                Players
+              </button>
+            </Link>
+            {/* <button
               onClick={toggleMenu}
               className="text-center text-lg text-black block w-full p-2 mb-4 bg-blue-500 rounded"
             >
               Settings
+            </button> */}
+            <button
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "Are you sure you want to clear squads (teams)?"
+                  )
+                ) {
+                  clearTeams();
+                }
+              }}
+              className="text-center text-lg text-white block w-full p-2 mb-4 bg-red-600 rounded"
+            >
+              Clear Squads (Teams)
             </button>
+
+           
           </div>
         </div>
       )}
 
-      {/* <div class="w-full mt-20 max-w-sm  border rounded-lg shadow-sm  border-gray-800 bg-white/20 backdrop-blur-none">
-        <a href="#">
-          <img
-            class="p-8 rounded-t-lg"
-            src="https://documents.iplt20.com/ipl/IPLHeadshot2024/2.png"
-            alt="product image"
-          />
-        </a>
-        <div class="px-3 pb-6">
-          <a href="#">
-            <h5 class="text-4xl mb-4 font-bold  text-gray-900 dark:text-white font-ububtu tracking-wide text-center">
-              VIRAT KOHLI{" "}
-            </h5>
-          </a>
 
-          <div class="flex items-center justify-between">
-            <button
-              href="#"
-              class="text-white bg-[#222] block m-auto px-20 font-ububtu rounded-lg text-lg py-2.5 text-center "
-            >
-              BID
-            </button>
-          </div>
-        </div>
-      </div> */}
-
-<div className="flex flex-col items-center">
-      {/* Display the current player card */}
-      <div className="w-full mt-20 max-w-sm border rounded-lg shadow-sm border-gray-800 bg-white/20 backdrop-blur-none">
+ <>
+    <div className=" flex flex-col items-center ">
+    {/* Display the current player card */}
+    <div className=" relative w-full mt-20 max-w-sm border rounded-lg shadow-sm border-gray-800 bg-white/20 backdrop-blur-none">
       {/* Display the current set name */}
       <div className="mt-4 text-center ">
-        <h3 className="text-2xl  font-ububtu font-extrabold bg-black py-1 text-white">{setName}</h3>
+        <h3 className="text-2xl  font-ububtu font-extrabold bg-black py-1 text-white">
+          {setName}
+        </h3>
       </div>
+      <a href="#">
+        <img
+          className=" h-60 w-60 block mx-auto rounded-full my-4 bg-white/30"
+          src={src}
+          alt="product image"
+        />
+      </a>
+      <div className="px-3 pb-6">
         <a href="#">
-          <img className=" h-60 w-60 block mx-auto rounded-full my-4 bg-white/30" src={src} alt="product image" />
+          <h5 className="text-3xl  uppercase font-bold text-gray-900 dark:text-white font-ububtu tracking-wide text-center mb-2">
+            {name}
+          </h5>
+          {(type === "bat" && (
+            <img
+              src="https://www.iplt20.com/assets/images/teams-batsman-icon.svg"
+              alt="Batsman Icon"
+              className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
+            />
+          )) ||
+            (type === "wk" && (
+              <img
+                src="https://www.iplt20.com/assets/images/teams-wicket-keeper-icon.svg"
+                alt="Batsman Icon"
+                className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
+              />
+            )) ||
+            (type === "bowl" && (
+              <img
+                src="https://www.iplt20.com/assets/images/teams-bowler-icon.svg"
+                alt="Batsman Icon"
+                className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
+              />
+            )) ||
+            (type === "al" && (
+              <img
+                src="https://www.iplt20.com/assets/images/teams-all-rounder-icon.svg"
+                alt="Batsman Icon"
+                className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
+              />
+            ))}
         </a>
-        <div className="px-3 pb-6">
-          <a href="#">
-            <h5 className="text-3xl mb-4 uppercase font-bold text-gray-900 dark:text-white font-ububtu tracking-wide text-center">
-              {name}
-            </h5>
-          </a>
-          <p className="text-center mb-4 text-xl text-black bg-white/80 w-fit block mx-auto px-5 rounded-md font-bold py-2">{basePrice}</p>
+        <p className="text-center mb-4 text-xl text-black bg-white/80 w-fit block mx-auto px-5 rounded-md font-bold py-2">
+          Base Price : {basePrice}
+        </p>
 
-          <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
+          {/* <button
+            onClick={() => openModal(name)}
+            className="text-white bg-[#222] block mx-1 w-1/2 font-ububtu rounded-lg text-lg py-2.5 text-center"
+          >
+            BID
+          </button> */}
+          {isPlayerSold() ? (
             <button
-              href="#"
-              className="text-white bg-[#222] block m-auto px-16 font-ububtu rounded-lg text-lg py-2.5 text-center"
+              disabled
+              className="text-white bg-red-600 block mx-auto w-1/2  font-ububtu rounded-lg text-xl uppercase py-2.5 text-center cursor-not-allowed"
             >
-              BID
+              Sold
             </button>
-          </div>
+          ) : (
+            <>
+              {isPlayerUnSold() ? (
+                <button
+                  onClick={handleBidClick}
+                  className="text-white bg-red-600 block mx-auto w-1/2  font-ububtu rounded-lg text-xl uppercase py-2.5 text-center cursor-not-allowed"
+                >
+                  Unsold
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={handleUnsold}
+                    className="text-white bg-[#222] block mx-1 w-1/2  font-ububtu rounded-lg text-lg py-2.5 text-center"
+                  >
+                    Unsold
+                  </button>
+                  <button
+                    onClick={handleBidClick}
+                    className="text-white bg-[#222] block mx-1 w-1/2 font-ububtu rounded-lg text-lg py-2.5 text-center"
+                  >
+                    Bid
+                  </button>
+                </>
+              )}
+            </>
+          )}
         </div>
       </div>
-
-      {/* Buttons to navigate between players */}
-      <div className="mt-4 flex space-x-4">
-        <button
-          onClick={prevPlayer}
-          className="text-white bg-gray-800 px-4 py-2 rounded-lg"
-        >
-          Previous Player
-        </button>
-        <button
-          onClick={nextPlayer}
-          className="text-white bg-gray-800 px-4 py-2 rounded-lg"
-        >
-          Next Player
-        </button>
-      </div>
-
-      {/* Buttons to navigate between sets */}
-      <div className="mt-4 flex space-x-4">
-        <button
-          onClick={prevSet}
-          className="text-white bg-gray-800 px-4 py-2 rounded-lg"
-        >
-          Previous Set
-        </button>
-        <button
-          onClick={nextSet}
-          className="text-white bg-gray-800 px-4 py-2 rounded-lg"
-        >
-          Next Set
-        </button>
-      </div>
-
-      
     </div>
+
+    {/* Buttons to navigate between players */}
+    <div className="mt-4 flex space-x-4">
+      <button
+        onClick={prevPlayer}
+        className="text-white bg-gray-800 px-4 py-2 rounded-lg"
+      >
+        Previous Player
+      </button>
+      <button
+        onClick={nextPlayer}
+        className="text-white bg-gray-800 px-4 py-2 rounded-lg"
+      >
+        Next Player
+      </button>
+    </div>
+
+    {/* Buttons to navigate between sets */}
+    <div className="mt-4 flex space-x-4">
+      <button
+        onClick={prevSet}
+        className="text-white bg-gray-800 px-4 py-2 rounded-lg"
+      >
+        Previous Set
+      </button>
+      <button
+        onClick={nextSet}
+        className="text-white bg-gray-800 px-4 py-2 rounded-lg"
+      >
+        Next Set
+      </button>
+    </div>
+  </div>
+  </>
+  
+
+     
+
+      {/* NEW CODE */}
+
+      {showModal && playerForModal && (
+        <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 flex justify-center items-center z-10">
+          <div className="bg-white p-8 rounded-lg shadow-lg">
+            <h2 className="text-3xl text-center uppercase  font-ububtu font-extrabold tracking-wider mb-4 border-b pb-1">
+              {playerForModal}
+            </h2>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handlePlayerSale();
+              }}
+            >
+              <div className="mb-4">
+                {/* <h3 className="text-lg font-semibold mb-2">Select a Team:</h3> */}
+                {teams.map((team) => (
+                  <div
+                    key={team}
+                    className="mb-2  p-3  uppercase text-gray-900 font-bold rounded-md bg-[url('https://img.freepik.com/free-vector/gold-metal-background_78370-154.jpg?semt=ais_hybrid')] bg-cover bg-no-repeat"
+                  >
+                    <label className="items-center inline-block">
+                      <input
+                        type="radio"
+                        name="team"
+                        value={team}
+                        checked={selectedTeam === team}
+                        onChange={(e) => setSelectedTeam(e.target.value)}
+                        className="mr-2 bg-black"
+                      />
+                      {team} -
+                      
+                    </label>
+                    <b className="bg-gray-100 text-gray-800 float-right left-0  font-medium ml-2 px-2.5 py-0.5 rounded-full dark:bg-gray-700 dark:text-gray-300">
+                        {" "}
+                        {teamAmounts[team]?.toLocaleString() || "1"} Cr
+                      </b>
+                  </div>
+                ))}
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Sold Price:</label>
+                <input
+                  type="number"
+                  min="0"
+                  max={teamAmounts[selectedTeam] || 1}
+                  step="0.01"
+                  value={soldPrice}
+                  onChange={(e) => setSoldPrice(Number(e.target.value))}
+                  className="w-full p-2 border border-black rounded "
+                  required
+                />
+              </div>
+              <div className="flex justify-between">
+                <button
+                  type="submit"
+                  className="bg-[#222] border border-white text-white px-4 py-2 rounded"
+                >
+                  Sold
+                </button>
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="bg-red-700 text-white px-4 py-2 rounded"
+                >
+                  Close
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

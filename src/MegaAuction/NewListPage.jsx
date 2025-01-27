@@ -1,6 +1,6 @@
 import React from "react";
 
-import bg_img from "../assets/bg_img.jpeg";
+import bg_img from "../assets/bg_img3.jpeg";
 // const playerData = [
 //   {
 //     setName: "SET 1 M1",
@@ -477,6 +477,10 @@ const NewListPage = () => {
             <ul className="list-disc">
               <li>126 Indian players </li>
               <li>114 overseas players</li>
+              <li>55 Batsman</li>
+              <li>28 Wicket Keepers</li>
+              <li>66 All Rounders</li>
+              <li>91 Bowlers</li>
             </ul>
             The players are divided into <b>40 sets</b>, with 44 uncapped
             players included.
@@ -533,11 +537,12 @@ const NewListPage = () => {
             // shadow-md  shadow-white"
             >
               {set.players.map((player, idx) => (
-                <li key={idx} className="text-lg py-1">
+                <li key={idx} className="relative text-lg py-1">
                   {/* {idx + 1}.{" "} */}
                   <img src={player.src} className="h-10 w-10 inline-block mr-1 rounded-full" alt="" />
                   <span className="font-bold font-ububtu tracking-wide text-xl ">
                     {player.name.toUpperCase()}{" "}
+                    
                     <span className="text-right  float-right ">
                       {player.basePrice}
                     </span>
