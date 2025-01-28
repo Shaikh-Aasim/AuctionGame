@@ -6,20 +6,29 @@ import playerData from "/src/MegaAuction/Players";
 function MainAuction() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [storedUnsoldPlayers, setStoredUnsoldPlayers] = useState(null);
-
+  // const [playerIndex, setPlayerIndex] = useState(0); // For cycling within a set
+  const [playerIndex, setPlayerIndex] = useState(() => {
+    const storedIndex = localStorage.getItem("playerIndex");
+    return storedIndex ? parseInt(storedIndex, 10) : 0; // Default to 0 if not found
+  });
+  const [setIndex, setSetIndex] = useState(() => {
+    const storedIndex = localStorage.getItem("setIndex");
+    return storedIndex ? parseInt(storedIndex, 10) : 0;
+  }); // For cycling between sets
+  const [setNumber, setSetNumber] = useState(setIndex);
 
   useEffect(() => {
+    const players = JSON.parse(localStorage.getItem("unsold_players")) || [];
+    setStoredUnsoldPlayers(players);
+    // console.log(storedUnsoldPlayers)
+    localStorage.setItem("playerIndex", playerIndex);
+    localStorage.setItem("setIndex", setIndex);
+    // localStorage.setItem("setIndex", 0);
     
-      const players = JSON.parse(localStorage.getItem("unsold_players")) || [];
-      setStoredUnsoldPlayers(players);
-      console.log(storedUnsoldPlayers)
-    }, []);    
+  }, [playerIndex, setIndex]);
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
-
-  const [setIndex, setSetIndex] = useState(0); // For cycling between sets
-  const [playerIndex, setPlayerIndex] = useState(0); // For cycling within a set
 
   // Navigate to the next player
   const nextPlayer = () => {
@@ -96,7 +105,6 @@ function MainAuction() {
       return;
     }
 
-
     const newTeamAmounts = { ...teamAmounts };
 
     // Check if the remaining amount is sufficient
@@ -123,7 +131,7 @@ function MainAuction() {
       storedTeams[selectedTeam] = [];
     }
 
-    if(storedUnsoldPlayers.name === playerForModal){
+    if (storedUnsoldPlayers.name === playerForModal) {
       const updatedPlayers = storedUnsoldPlayers.filter(
         (player) => player.name !== playerForModal
       );
@@ -180,8 +188,6 @@ function MainAuction() {
     return false;
   };
 
-
-
   const handleBidClick = () => {
     if (isPlayerSold()) {
       alert("Player already sold!");
@@ -220,6 +226,9 @@ function MainAuction() {
           "unsold_players",
           JSON.stringify(updatedUnsoldPlayers)
         );
+
+        window.location.reload();
+
       } else {
         alert(`${name} is already marked as unsold.`);
       }
@@ -233,14 +242,22 @@ function MainAuction() {
     alert("Teams have been cleared from local storage.");
   };
 
-  const clearteamAmounts = () => {
-    alert("Team Amount have been cleared from local storage.");
-  };
 
+
+  const handleSetNum = () => {
+    if (setNumber > 0) {
+      localStorage.setItem("setIndex", setNumber - 1);
+    }else{
+      
+      localStorage.setItem("setIndex", 0);
+
+    }
+    window.location.reload();
+  };
 
   return (
     <div
-      className={`p-6 min-h-screen`}
+      className={`relative p-6 min-h-screen`}
       style={{
         backgroundImage: `url(${bg_img})`,
         backgroundSize: "cover",
@@ -268,7 +285,6 @@ function MainAuction() {
           }`}
         />
       </div>
-
       {/* Full Page Nav Menu */}
       {menuOpen && (
         <div
@@ -328,152 +344,167 @@ function MainAuction() {
             >
               Clear Squads (Teams)
             </button>
-
-           
           </div>
         </div>
       )}
 
+      <div className="flex absolute top-4 right-5 justify-end">
 
- <>
-    <div className=" flex flex-col items-center ">
-    {/* Display the current player card */}
-    <div className=" relative w-full mt-20 max-w-sm border rounded-lg shadow-sm border-gray-800 bg-white/20 backdrop-blur-none">
-      {/* Display the current set name */}
-      <div className="mt-4 text-center ">
-        <h3 className="text-2xl  font-ububtu font-extrabold bg-black py-1 text-white">
-          {setName}
-        </h3>
-      </div>
-      <a href="#">
-        <img
-          className=" h-60 w-60 block mx-auto rounded-full my-4 bg-white/30"
-          src={src}
-          alt="product image"
+      <input
+        type="number"
+        // value={setNumber}
+        min={0}
+        max={40}
+        required
+        onChange={(e) => {
+          const value = Math.min(40, Math.max(0, Number(e.target.value)));
+          setSetNumber(value);
+        }}
+        className="border border-gray-300  rounded p-2 mx-2 w-48"
+        placeholder="Enter SET number"
         />
-      </a>
-      <div className="px-3 pb-6">
-        <a href="#">
-          <h5 className="text-3xl  uppercase font-bold text-gray-900 dark:text-white font-ububtu tracking-wide text-center mb-2">
-            {name}
-          </h5>
-          {(type === "bat" && (
-            <img
-              src="https://www.iplt20.com/assets/images/teams-batsman-icon.svg"
-              alt="Batsman Icon"
-              className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
-            />
-          )) ||
-            (type === "wk" && (
+      
+      <button
+        onClick={handleSetNum}
+        className="bg-black text-white p-2 rounded"
+        >
+        GO
+      </button>
+        </div>
+      <>
+        <div className=" flex flex-col items-center ">
+          {/* Display the current player card */}
+          <div className=" relative w-full mt-20 max-w-sm border rounded-lg shadow-sm border-gray-800 bg-white/20 backdrop-blur-none">
+            {/* Display the current set name */}
+            <div className="mt-4 text-center ">
+              <h3 className="text-2xl  font-ububtu font-extrabold bg-black py-1 text-white">
+                {setName}
+              </h3>
+            </div>
+            <a href="#">
               <img
-                src="https://www.iplt20.com/assets/images/teams-wicket-keeper-icon.svg"
-                alt="Batsman Icon"
-                className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
+                className=" h-60 w-60 block mx-auto rounded-full my-4 bg-white/30"
+                src={src}
+                alt="product image"
               />
-            )) ||
-            (type === "bowl" && (
-              <img
-                src="https://www.iplt20.com/assets/images/teams-bowler-icon.svg"
-                alt="Batsman Icon"
-                className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
-              />
-            )) ||
-            (type === "al" && (
-              <img
-                src="https://www.iplt20.com/assets/images/teams-all-rounder-icon.svg"
-                alt="Batsman Icon"
-                className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
-              />
-            ))}
-        </a>
-        <p className="text-center mb-4 text-xl text-black bg-white/80 w-fit block mx-auto px-5 rounded-md font-bold py-2">
-          Base Price : {basePrice}
-        </p>
+            </a>
+            <div className="px-3 pb-6">
+              <a href="#">
+                <h5 className="text-3xl  uppercase font-bold text-gray-900 dark:text-white font-ububtu tracking-wide text-center mb-2">
+                  {name}
+                </h5>
+                {(type === "bat" && (
+                  <img
+                    src="https://www.iplt20.com/assets/images/teams-batsman-icon.svg"
+                    alt="Batsman Icon"
+                    className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
+                  />
+                )) ||
+                  (type === "wk" && (
+                    <img
+                      src="https://www.iplt20.com/assets/images/teams-wicket-keeper-icon.svg"
+                      alt="Batsman Icon"
+                      className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
+                    />
+                  )) ||
+                  (type === "bowl" && (
+                    <img
+                      src="https://www.iplt20.com/assets/images/teams-bowler-icon.svg"
+                      alt="Batsman Icon"
+                      className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
+                    />
+                  )) ||
+                  (type === "al" && (
+                    <img
+                      src="https://www.iplt20.com/assets/images/teams-all-rounder-icon.svg"
+                      alt="Batsman Icon"
+                      className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
+                    />
+                  ))}
+              </a>
+              <p className="text-center mb-4 text-xl text-black bg-white/80 w-fit block mx-auto px-5 rounded-md font-bold py-2">
+                Base Price : {basePrice}
+              </p>
 
-        <div className="flex items-center justify-between">
-          {/* <button
+              <div className="flex items-center justify-between">
+                {/* <button
             onClick={() => openModal(name)}
             className="text-white bg-[#222] block mx-1 w-1/2 font-ububtu rounded-lg text-lg py-2.5 text-center"
           >
             BID
           </button> */}
-          {isPlayerSold() ? (
+                {isPlayerSold() ? (
+                  <button
+                    disabled
+                    className="text-white bg-red-600 block mx-auto w-1/2  font-ububtu rounded-lg text-xl uppercase py-2.5 text-center cursor-not-allowed"
+                  >
+                    Sold
+                  </button>
+                ) : (
+                  <>
+                    {isPlayerUnSold() ? (
+                      <button
+                        onClick={handleBidClick}
+                        className="text-white bg-red-600 block mx-auto w-1/2  font-ububtu rounded-lg text-xl uppercase py-2.5 text-center cursor-not-allowed"
+                      >
+                        Unsold
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={handleUnsold}
+                          className="text-white bg-[#222] block mx-1 w-1/2  font-ububtu rounded-lg text-lg py-2.5 text-center"
+                        >
+                          Unsold
+                        </button>
+                        <button
+                          onClick={handleBidClick}
+                          className="text-white bg-[#222] block mx-1 w-1/2 font-ububtu rounded-lg text-lg py-2.5 text-center"
+                        >
+                          Bid
+                        </button>
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Buttons to navigate between players */}
+          <div className="mt-4 flex space-x-4">
             <button
-              disabled
-              className="text-white bg-red-600 block mx-auto w-1/2  font-ububtu rounded-lg text-xl uppercase py-2.5 text-center cursor-not-allowed"
+              onClick={prevPlayer}
+              className="text-white bg-gray-800 px-4 py-2 rounded-lg"
             >
-              Sold
+              Previous Player
             </button>
-          ) : (
-            <>
-              {isPlayerUnSold() ? (
-                <button
-                  onClick={handleBidClick}
-                  className="text-white bg-red-600 block mx-auto w-1/2  font-ububtu rounded-lg text-xl uppercase py-2.5 text-center cursor-not-allowed"
-                >
-                  Unsold
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={handleUnsold}
-                    className="text-white bg-[#222] block mx-1 w-1/2  font-ububtu rounded-lg text-lg py-2.5 text-center"
-                  >
-                    Unsold
-                  </button>
-                  <button
-                    onClick={handleBidClick}
-                    className="text-white bg-[#222] block mx-1 w-1/2 font-ububtu rounded-lg text-lg py-2.5 text-center"
-                  >
-                    Bid
-                  </button>
-                </>
-              )}
-            </>
-          )}
+            <button
+              onClick={nextPlayer}
+              className="text-white bg-gray-800 px-4 py-2 rounded-lg"
+            >
+              Next Player
+            </button>
+          </div>
+
+          {/* Buttons to navigate between sets */}
+          <div className="mt-4 flex space-x-4">
+            <button
+              onClick={prevSet}
+              className="text-white bg-gray-800 px-4 py-2 rounded-lg"
+            >
+              Previous Set
+            </button>
+            <button
+              onClick={nextSet}
+              className="text-white bg-gray-800 px-4 py-2 rounded-lg"
+            >
+              Next Set
+            </button>
+          </div>
         </div>
-      </div>
-    </div>
-
-    {/* Buttons to navigate between players */}
-    <div className="mt-4 flex space-x-4">
-      <button
-        onClick={prevPlayer}
-        className="text-white bg-gray-800 px-4 py-2 rounded-lg"
-      >
-        Previous Player
-      </button>
-      <button
-        onClick={nextPlayer}
-        className="text-white bg-gray-800 px-4 py-2 rounded-lg"
-      >
-        Next Player
-      </button>
-    </div>
-
-    {/* Buttons to navigate between sets */}
-    <div className="mt-4 flex space-x-4">
-      <button
-        onClick={prevSet}
-        className="text-white bg-gray-800 px-4 py-2 rounded-lg"
-      >
-        Previous Set
-      </button>
-      <button
-        onClick={nextSet}
-        className="text-white bg-gray-800 px-4 py-2 rounded-lg"
-      >
-        Next Set
-      </button>
-    </div>
-  </div>
-  </>
-  
-
-     
-
+      </>
       {/* NEW CODE */}
-
       {showModal && playerForModal && (
         <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 flex justify-center items-center z-10">
           <div className="bg-white p-8 rounded-lg shadow-lg">
@@ -504,12 +535,11 @@ function MainAuction() {
                         className="mr-2 bg-black"
                       />
                       {team} -
-                      
                     </label>
                     <b className="bg-gray-100 text-gray-800 float-right left-0  font-medium ml-2 px-2.5 py-0.5 rounded-full dark:bg-gray-700 dark:text-gray-300">
-                        {" "}
-                        {teamAmounts[team]?.toLocaleString() || "1"} Cr
-                      </b>
+                      {" "}
+                      {teamAmounts[team]?.toLocaleString() || "1"} Cr
+                    </b>
                   </div>
                 ))}
               </div>
