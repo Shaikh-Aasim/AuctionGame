@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import bg_img from "../assets/auctiontop.jpg";
+import unsold_bg from "../assets/unsold_bg.png";
 import { Link } from "react-router-dom";
 import playerData from "/src/MegaAuction/Players";
 
 function MainAuction() {
+  const [unsoldOpen, setUnsoldOpen] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [storedUnsoldPlayers, setStoredUnsoldPlayers] = useState(null);
+  const [storedUnsoldPlayers, setStoredUnsoldPlayers] = useState({});
   // const [playerIndex, setPlayerIndex] = useState(0); // For cycling within a set
   const [playerIndex, setPlayerIndex] = useState(() => {
     const storedIndex = localStorage.getItem("playerIndex");
@@ -20,11 +22,10 @@ function MainAuction() {
   useEffect(() => {
     const players = JSON.parse(localStorage.getItem("unsold_players")) || [];
     setStoredUnsoldPlayers(players);
-    // console.log(storedUnsoldPlayers)
+    console.log(storedUnsoldPlayers);
     localStorage.setItem("playerIndex", playerIndex);
     localStorage.setItem("setIndex", setIndex);
     // localStorage.setItem("setIndex", 0);
-    
   }, [playerIndex, setIndex]);
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -124,22 +125,22 @@ function MainAuction() {
     let storedTeams = JSON.parse(localStorage.getItem("teams")) || {};
 
     // Debugging: Check the structure of `storedTeams`
-    console.log("Before Update:", storedTeams);
+    // console.log("Before Update:", storedTeams);
 
     // Ensure the selected team exists as a key in `storedTeams`
     if (!storedTeams[selectedTeam]) {
       storedTeams[selectedTeam] = [];
     }
 
-    if (storedUnsoldPlayers.name === playerForModal) {
-      const updatedPlayers = storedUnsoldPlayers.filter(
-        (player) => player.name !== playerForModal
-      );
+    // if (storedUnsoldPlayers.name === playerForModal) {
+    //   const updatedPlayers = storedUnsoldPlayers.filter(
+    //     (player) => player.name !== playerForModal
+    //   );
 
-      // Update state and localStorage
-      setStoredUnsoldPlayers(updatedPlayers);
-      localStorage.setItem("unsold_players", JSON.stringify(updatedPlayers));
-    }
+    //   // Update state and localStorage
+    //   setStoredUnsoldPlayers(updatedPlayers);
+    //   localStorage.setItem("unsold_players", JSON.stringify(updatedPlayers));
+    // }
 
     // Add the player and sold price to the team's array
     storedTeams[selectedTeam].push({
@@ -158,6 +159,7 @@ function MainAuction() {
     alert(
       `${playerForModal} sold to ${selectedTeam} for ₹${soldPrice.toLocaleString()}Cr`
     );
+
     closeModal();
   };
 
@@ -173,19 +175,40 @@ function MainAuction() {
     }
     return false;
   };
+  // const isUnsoldPlayerSold = () => {
+  //   let unsoldPlayers = JSON.parse(localStorage.getItem("unsold_players")) || [];
 
+  //   // Check if any player in the array matches the given name
+  //   return unsoldPlayers.some(player => player.name === storedUnsoldPlayers.name);
+  // };
+
+  // const isPlayerUnSold = () => {
+  //   // Retrieve the list of unsold players from localStorage
+  //   const storedUnsoldPlayer =
+  //     JSON.parse(localStorage.getItem("unsold_players")) || [];
+
+  //   // Iterate through the array to check if the player exists
+  //   for (let player of storedUnsoldPlayer) {
+  //     if (player.name === name) {
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // };
   const isPlayerUnSold = () => {
     // Retrieve the list of unsold players from localStorage
-    const storedUnsoldPlayer =
+    const storedUnsoldData =
       JSON.parse(localStorage.getItem("unsold_players")) || [];
 
-    // Iterate through the array to check if the player exists
-    for (let player of storedUnsoldPlayer) {
-      if (player.name === name) {
-        return true;
-      }
-    }
-    return false;
+    // Find the "Unsold Players" set
+    const unsoldSet = storedUnsoldData.find(
+      (set) => set.setName === "Unsold Players"
+    );
+
+    if (!unsoldSet) return false; // If the set doesn't exist, return false
+
+    // Check if the player exists in the "Unsold Players" set
+    return unsoldSet.players.some((player) => player.name === name);
   };
 
   const handleBidClick = () => {
@@ -196,42 +219,98 @@ function MainAuction() {
     }
   };
 
+  const handleUnsoldBidClick = (playerName, playerSrc, playerType) => {
+    if (isPlayerSold()) {
+      alert("Player already sold!");
+    } else {
+      openModal(playerName, playerSrc, playerType);
+    }
+  };
   // const [isUnsold, setIsUnsold] = useState(false);
+
+  // const handleUnsold = () => {
+  //   if (window.confirm("Sure Unsold ?")) {
+  //     // setIsUnsold(true);
+
+  //     // Retrieve player details
+  //     const { name, basePrice, src, type } = players[playerIndex];
+
+  //     // Retrieve existing unsold players from localStorage
+  //     const unsoldPlayers =
+  //       JSON.parse(localStorage.getItem("unsold_players")) || [];
+
+  //     // Check if the player is already in the list
+  //     const isAlreadyUnsold = unsoldPlayers.some(
+  //       (player) => player.name === name
+  //     );
+
+  //     if (!isAlreadyUnsold) {
+  //       // Add the current unsold player to the list if not already present
+  //       const updatedUnsoldPlayers = [
+  //         ...unsoldPlayers,
+  //         { name, basePrice, src, type },
+  //       ];
+
+  //       // Store the updated list in localStorage
+  //       localStorage.setItem(
+  //         "unsold_players",
+  //         JSON.stringify(updatedUnsoldPlayers)
+  //       );
+
+  //       window.location.reload();
+  //     } else {
+  //       alert(`${name} is already marked as unsold.`);
+  //     }
+  //   }
+  // };
 
   const handleUnsold = () => {
     if (window.confirm("Sure Unsold ?")) {
-      // setIsUnsold(true);
-
       // Retrieve player details
       const { name, basePrice, src, type } = players[playerIndex];
 
+      // Default set name for all unsold players
+      const setName = "Unsold Players";
+
       // Retrieve existing unsold players from localStorage
-      const unsoldPlayers =
+      const unsoldPlayersData =
         JSON.parse(localStorage.getItem("unsold_players")) || [];
 
-      // Check if the player is already in the list
-      const isAlreadyUnsold = unsoldPlayers.some(
-        (player) => player.name === name
+      // Find if "Unsold Players" set already exists
+      const existingSetIndex = unsoldPlayersData.findIndex(
+        (set) => set.setName === setName
       );
 
-      if (!isAlreadyUnsold) {
-        // Add the current unsold player to the list if not already present
-        const updatedUnsoldPlayers = [
-          ...unsoldPlayers,
-          { name, basePrice, src, type },
-        ];
+      if (existingSetIndex !== -1) {
+        // Set exists, check if the player is already in the list
+        const isAlreadyUnsold = unsoldPlayersData[
+          existingSetIndex
+        ].players.some((player) => player.name === name);
 
-        // Store the updated list in localStorage
-        localStorage.setItem(
-          "unsold_players",
-          JSON.stringify(updatedUnsoldPlayers)
-        );
-
-        window.location.reload();
-
+        if (!isAlreadyUnsold) {
+          // Add the player to the existing "Unsold Players" set
+          unsoldPlayersData[existingSetIndex].players.push({
+            name,
+            basePrice,
+            src,
+            type,
+          });
+        } else {
+          alert(`${name} is already marked as unsold.`);
+          return;
+        }
       } else {
-        alert(`${name} is already marked as unsold.`);
+        // Create "Unsold Players" set and add the player
+        unsoldPlayersData.push({
+          setName,
+          players: [{ name, basePrice, src, type }],
+        });
       }
+
+      // Store the updated list in localStorage
+      localStorage.setItem("unsold_players", JSON.stringify(unsoldPlayersData));
+
+      window.location.reload();
     }
   };
 
@@ -242,15 +321,11 @@ function MainAuction() {
     alert("Teams have been cleared from local storage.");
   };
 
-
-
   const handleSetNum = () => {
     if (setNumber > 0) {
       localStorage.setItem("setIndex", setNumber - 1);
-    }else{
-      
+    } else {
       localStorage.setItem("setIndex", 0);
-
     }
     window.location.reload();
   };
@@ -348,162 +423,172 @@ function MainAuction() {
         </div>
       )}
 
-      <div className="flex absolute top-4 right-5 justify-end">
-
-      <input
-        type="number"
-        // value={setNumber}
-        min={0}
-        max={40}
-        required
-        onChange={(e) => {
-          const value = Math.min(40, Math.max(0, Number(e.target.value)));
-          setSetNumber(value);
-        }}
-        className="border border-gray-300  rounded p-2 mx-2 w-48"
-        placeholder="Enter SET number"
+      <div className="absolute top-4 right-5 justify-end">
+        <input
+          type="number"
+          // value={setNumber}
+          min={0}
+          max={40}
+          required
+          onChange={(e) => {
+            const value = Math.min(40, Math.max(0, Number(e.target.value)));
+            setSetNumber(value);
+          }}
+          className="border border-gray-300  rounded p-2 mx-2 w-48"
+          placeholder="Enter SET number"
         />
-      
-      <button
-        onClick={handleSetNum}
-        className="bg-black text-white p-2 rounded"
+        <button
+          onClick={handleSetNum}
+          className="bg-black text-white p-2 rounded"
         >
-        GO
-      </button>
-        </div>
-      <>
-        <div className=" flex flex-col items-center ">
-          {/* Display the current player card */}
-          <div className=" relative w-full mt-20 max-w-sm border rounded-lg shadow-sm border-gray-800 bg-white/20 backdrop-blur-none">
-            {/* Display the current set name */}
-            <div className="mt-4 text-center ">
-              <h3 className="text-2xl  font-ububtu font-extrabold bg-black py-1 text-white">
-                {setName}
-              </h3>
-            </div>
+          GO
+        </button>{" "}
+        <br />
+        {/* <button
+          className="px-3 py-1 rounded ml-2 mt-1 bg-black text-white"
+          onClick={() =>
+            unsoldOpen ? setUnsoldOpen(false) : setUnsoldOpen(true)
+          }
+        >
+          {unsoldOpen ? "Show Unsold Players" : "Hide Unsold Players"}
+        </button> */}
+      </div>
+
+      <div className=" flex flex-col items-center ">
+        {/* Display the current player card */}
+        <div className=" relative w-full mt-20 max-w-sm border rounded-lg shadow-sm border-gray-800 bg-white/20 backdrop-blur-none">
+          {/* Display the current set name */}
+          <div className="mt-4 text-center ">
+            <h3 className="text-2xl  font-ububtu font-extrabold bg-black py-1 text-white">
+              {setName}
+            </h3>
+          </div>
+          <img
+            className=" h-60 w-60 block mx-auto rounded-full my-4 bg-white/30"
+            src={src}
+            alt="Player image"
+          />
+
+          <div className="px-3 pb-6">
             <a href="#">
-              <img
-                className=" h-60 w-60 block mx-auto rounded-full my-4 bg-white/30"
-                src={src}
-                alt="product image"
-              />
-            </a>
-            <div className="px-3 pb-6">
-              <a href="#">
-                <h5 className="text-3xl  uppercase font-bold text-gray-900 dark:text-white font-ububtu tracking-wide text-center mb-2">
-                  {name}
-                </h5>
-                {(type === "bat" && (
+              <h5 className="text-3xl  uppercase font-bold text-gray-900 dark:text-white font-ububtu tracking-wide text-center mb-2">
+                {name}
+              </h5>
+              {(type === "bat" && (
+                <img
+                  src="https://www.iplt20.com/assets/images/teams-batsman-icon.svg"
+                  alt="Batsman Icon"
+                  className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
+                />
+              )) ||
+                (type === "wk" && (
                   <img
-                    src="https://www.iplt20.com/assets/images/teams-batsman-icon.svg"
+                    src="https://www.iplt20.com/assets/images/teams-wicket-keeper-icon.svg"
                     alt="Batsman Icon"
                     className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
                   />
                 )) ||
-                  (type === "wk" && (
-                    <img
-                      src="https://www.iplt20.com/assets/images/teams-wicket-keeper-icon.svg"
-                      alt="Batsman Icon"
-                      className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
-                    />
-                  )) ||
-                  (type === "bowl" && (
-                    <img
-                      src="https://www.iplt20.com/assets/images/teams-bowler-icon.svg"
-                      alt="Batsman Icon"
-                      className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
-                    />
-                  )) ||
-                  (type === "al" && (
-                    <img
-                      src="https://www.iplt20.com/assets/images/teams-all-rounder-icon.svg"
-                      alt="Batsman Icon"
-                      className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
-                    />
-                  ))}
-              </a>
-              <p className="text-center mb-4 text-xl text-black bg-white/80 w-fit block mx-auto px-5 rounded-md font-bold py-2">
-                Base Price : {basePrice}
-              </p>
+                (type === "bowl" && (
+                  <img
+                    src="https://www.iplt20.com/assets/images/teams-bowler-icon.svg"
+                    alt="Batsman Icon"
+                    className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
+                  />
+                )) ||
+                (type === "al" && (
+                  <img
+                    src="https://www.iplt20.com/assets/images/teams-all-rounder-icon.svg"
+                    alt="Batsman Icon"
+                    className="mx-auto absolute bg-white rounded-full p-2 h-10 top-20 right-3"
+                  />
+                ))}
+            </a>
+            <p className="text-center mb-4 text-xl text-black bg-white/80 w-fit block mx-auto px-5 rounded-md font-bold py-2">
+              Base Price : {basePrice}
+            </p>
 
-              <div className="flex items-center justify-between">
-                {/* <button
+            <div className="flex items-center justify-between">
+              {/* <button
             onClick={() => openModal(name)}
             className="text-white bg-[#222] block mx-1 w-1/2 font-ububtu rounded-lg text-lg py-2.5 text-center"
           >
             BID
           </button> */}
-                {isPlayerSold() ? (
-                  <button
-                    disabled
-                    className="text-white bg-red-600 block mx-auto w-1/2  font-ububtu rounded-lg text-xl uppercase py-2.5 text-center cursor-not-allowed"
-                  >
-                    Sold
-                  </button>
-                ) : (
-                  <>
-                    {isPlayerUnSold() ? (
+              {isPlayerSold() ? (
+                <button
+                  disabled
+                  className="text-white bg-red-600 block mx-auto w-1/2  font-ububtu rounded-lg text-xl uppercase py-2.5 text-center cursor-not-allowed"
+                >
+                  Sold
+                </button>
+              ) : (
+                <>
+                  {isPlayerUnSold() ? (
+                    <div
+                      // onClick={handleBidClick}
+                      // disabled
+                      style={{ backgroundImage: `URL(${unsold_bg})` }}
+                      className={`text-white bg-contain bg-no-repeat block mx-auto w-1/4 h-10 font-ububtu rounded-lg text-xl  text-center cursor-not-allowed`}
+                    >
+                      {/* <img src={unsold_bg} alt="" /> */}
+                      {/* Unsold */}
+                    </div>
+                  ) : (
+                    <>
                       <button
-                        onClick={handleBidClick}
-                        className="text-white bg-red-600 block mx-auto w-1/2  font-ububtu rounded-lg text-xl uppercase py-2.5 text-center cursor-not-allowed"
+                        onClick={handleUnsold}
+                        className="text-white bg-[#222] block mx-1 w-1/2  font-ububtu rounded-lg text-lg py-2.5 text-center"
                       >
                         Unsold
                       </button>
-                    ) : (
-                      <>
-                        <button
-                          onClick={handleUnsold}
-                          className="text-white bg-[#222] block mx-1 w-1/2  font-ububtu rounded-lg text-lg py-2.5 text-center"
-                        >
-                          Unsold
-                        </button>
-                        <button
-                          onClick={handleBidClick}
-                          className="text-white bg-[#222] block mx-1 w-1/2 font-ububtu rounded-lg text-lg py-2.5 text-center"
-                        >
-                          Bid
-                        </button>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
+                      <button
+                        onClick={handleBidClick}
+                        className="text-white bg-[#222] block mx-1 w-1/2 font-ububtu rounded-lg text-lg py-2.5 text-center"
+                      >
+                        Bid
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
             </div>
           </div>
-
-          {/* Buttons to navigate between players */}
-          <div className="mt-4 flex space-x-4">
-            <button
-              onClick={prevPlayer}
-              className="text-white bg-gray-800 px-4 py-2 rounded-lg"
-            >
-              Previous Player
-            </button>
-            <button
-              onClick={nextPlayer}
-              className="text-white bg-gray-800 px-4 py-2 rounded-lg"
-            >
-              Next Player
-            </button>
-          </div>
-
-          {/* Buttons to navigate between sets */}
-          <div className="mt-4 flex space-x-4">
-            <button
-              onClick={prevSet}
-              className="text-white bg-gray-800 px-4 py-2 rounded-lg"
-            >
-              Previous Set
-            </button>
-            <button
-              onClick={nextSet}
-              className="text-white bg-gray-800 px-4 py-2 rounded-lg"
-            >
-              Next Set
-            </button>
-          </div>
         </div>
-      </>
+
+        {/* Buttons to navigate between players */}
+        <div className="mt-4 flex space-x-4">
+          <button
+            onClick={prevPlayer}
+            className="text-white bg-gray-800 px-4 py-2 rounded-lg"
+          >
+            Previous Player
+          </button>
+          <button
+            onClick={nextPlayer}
+            className="text-white bg-gray-800 px-4 py-2 rounded-lg"
+          >
+            Next Player
+          </button>
+        </div>
+
+        {/* Buttons to navigate between sets */}
+        <div className="mt-4 flex space-x-4">
+          <button
+            onClick={prevSet}
+            className="text-white bg-gray-800 px-4 py-2 rounded-lg"
+          >
+            Previous Set
+          </button>
+          <button
+            onClick={nextSet}
+            className="text-white bg-gray-800 px-4 py-2 rounded-lg"
+          >
+            Next Set
+          </button>
+        </div>
+      </div>
+
+      <></>
       {/* NEW CODE */}
       {showModal && playerForModal && (
         <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 flex justify-center items-center z-10">

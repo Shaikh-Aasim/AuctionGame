@@ -9,7 +9,7 @@ import NewSquad from "./components/NewSquad";
 import NewListPage from "./MegaAuction/NewListPage";
 import TeamManage from "./MegaAuction/TeamManage";
 import MainAuction from "./MegaAuction/MainAuction";
-// import UnsoldPlayer from "./MegaAuction/UnsoldPlayer";
+import UnsoldPlayer from "./MegaAuction/UnsoldPlayers";
 
 
 function App() {
@@ -29,7 +29,7 @@ function App() {
             <Route exact path="/NewListPage" element={<NewListPage/>}></Route>
             <Route exact path="/TeamManage" element={<TeamManage/>}></Route>
             <Route exact path="/MainAuction" element={<MainAuction/>}></Route>
-            {/* <Route exact path="/UnsoldPlayer" element={<UnsoldPlayer/>}></Route> */}
+            <Route exact path="/UnsoldPlayer" element={<UnsoldPlayer/>}></Route>
             
           </Routes>
         </div>
