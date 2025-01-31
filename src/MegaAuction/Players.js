@@ -113,7 +113,7 @@ const playerData = [
         { name: "harry Brook ✈️", basePrice: "2cr", type:"bat", src:"https://www.delhicapitals.in/static-assets/images/players/ipl/66374.png?v=1.62" },
         { name: "devon Conway ✈️", basePrice: "2cr", type:"bat", src:"https://documents.iplt20.com/ipl/IPLHeadshot2023/601.png" },
         { name: "jake f-mcgurk ✈️", basePrice: "2cr", type:"bat", src:"https://documents.iplt20.com/ipl/IPLHeadshot2024/3115.png" },
-        { name: "aiden Markram ✈️", basePrice: "2cr", type:"bat", src:"https://www.gujarattitansipl.com/static-assets/images/players/63611.png?v=5.12" },
+        { name: "aiden Markram ✈️", basePrice: "2cr", type:"bat", src:"https://www.lucknowsupergiants.in/static-assets/images/players/64219.png?v=12.55" },
         { name: "devdutt Padikkal", basePrice: "2cr", type:"bat", src:"https://www.royalchallengers.com/PRRCB01/public/styles/s/public/2024-11/DDp.png?itok=2Z6Kz01S" },
         { name: "rahul Tripathi", basePrice: "0.75cr", type:"bat", src:"https://documents.iplt20.com/playerheadshot/ipl/284/3838.png" },
         { name: "david Warner ✈️", basePrice: "2cr", type:"bat", src:"https://documents.iplt20.com/ipl/IPLHeadshot2024/214.png" },

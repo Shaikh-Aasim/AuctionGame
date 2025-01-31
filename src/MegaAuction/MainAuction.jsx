@@ -391,12 +391,20 @@ function MainAuction() {
                 Team Manage
               </button>
             </Link>
+            <Link to="/UnsoldPlayer">
+              <button
+                onClick={toggleMenu}
+                className="text-center text-lg text-black block w-full p-2 mb-4 bg-blue-500 rounded"
+              >
+                Unsold Players
+              </button>
+            </Link>
             <Link to="/NewListPage">
               <button
                 onClick={toggleMenu}
                 className="text-center text-lg text-black block w-full p-2 mb-4 bg-blue-500 rounded"
               >
-                Players
+                Players List
               </button>
             </Link>
             {/* <button
