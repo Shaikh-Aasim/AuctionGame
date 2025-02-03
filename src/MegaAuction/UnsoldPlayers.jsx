@@ -22,7 +22,7 @@ function MainAuction() {
     }
 
     // console.log("Updated storedUnsoldPlayers:", players);
-    localStorage.setItem("playerIndex", playerIndex);
+    localStorage.setItem("UnsoldPlayerIndex", playerIndex);
     localStorage.setItem("setIndex", setIndex);
     // window.location.reload();
   }, [playerIndex, setIndex, hasRun]);
